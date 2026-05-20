@@ -5,6 +5,7 @@ from google.genai import types
 
 from analyzer.extractors import EXTRACTORS
 from analyzer.rag import RAGIndex
+from views.errors import show_error
 
 
 def render_chat_view(ctx: dict) -> None:
@@ -64,7 +65,7 @@ def _render_single_doc(client, llama_key: str, doc_names, doc_kind, doc_text) ->
                 )
                 st.markdown(resp.text)
             except Exception as e:
-                st.error(f"Failed: {e}")
+                show_error(e)
 
 
 def _render_rag(client, doc_names, doc_text) -> None:
@@ -127,4 +128,4 @@ def _render_rag(client, doc_names, doc_text) -> None:
                         st.markdown(f"**{src}** · similarity {score:.3f}")
                         st.text(ch[:400] + ("..." if len(ch) > 400 else ""))
             except Exception as e:
-                st.error(f"Failed: {e}")
+                show_error(e)

@@ -13,6 +13,10 @@ from PIL import Image, UnidentifiedImageError
 from analyzer.crawler import extract_media_from_html
 from analyzer.extractors import _file_key
 from analyzer.images import caption_image, extract_images_from_pdf
+from views.errors import show_error
+
+MIN_IMAGE_DIM = 100
+MAX_CAPTIONS = 30
 
 
 def render_images_view(ctx: dict) -> None:
@@ -39,24 +43,23 @@ def render_images_view(ctx: dict) -> None:
             except Exception as e:
                 st.error(f"Screenshot render failed: {e}")
 
-    cols = st.columns([1, 1, 1])
+    cols = st.columns([2, 1])
     with cols[0]:
-        min_dim = st.slider(
-            "Min image size (pixels per side)", 32, 400, 100, step=16,
-            help="Filter out small icons/decorations.",
+        caption_with_ai = st.checkbox(
+            "Caption images with AI",
+            value=True,
+            help=(
+                f"Uses Gemini Vision to describe each image (logo, hero shot, infographic, etc.). "
+                f"Caps at {MAX_CAPTIONS} images. Uncheck to skip the Gemini calls."
+            ),
         )
     with cols[1]:
-        max_to_caption = st.slider(
-            "Max images to caption", 0, 50, 12,
-            help="Each caption is one Gemini Flash call. Set to 0 to skip captioning.",
-        )
-    with cols[2]:
         run_btn = st.button("Extract images", type="primary", key="t4_btn")
 
     if run_btn:
-        imgs = _extract_images(sel, doc_kind, min_dim)
+        imgs = _extract_images(sel, doc_kind)
         st.write(f"Found **{len(imgs)}** images.")
-        _caption_batch(client, imgs, max_to_caption)
+        _caption_batch(client, imgs, MAX_CAPTIONS if caption_with_ai else 0)
         st.session_state[f"images::{sel}"] = imgs
 
     video_urls = st.session_state.get(f"videos::{sel}", [])
@@ -70,7 +73,7 @@ def render_images_view(ctx: dict) -> None:
         _render_grid(imgs, sel, doc_kind)
 
 
-def _extract_images(sel: str, doc_kind, min_dim: int) -> list:
+def _extract_images(sel: str, doc_kind) -> list:
     """Extract images either from PDF bytes (PyMuPDF) or URL HTML (fetch + filter)."""
     imgs: list = []
     with st.spinner("Extracting images..."):
@@ -79,7 +82,7 @@ def _extract_images(sel: str, doc_kind, min_dim: int) -> list:
                 imgs = extract_images_from_pdf(
                     st.session_state.docs[sel],
                     _file_key(st.session_state.docs[sel]),
-                    min_pixels=min_dim * min_dim,
+                    min_pixels=MIN_IMAGE_DIM * MIN_IMAGE_DIM,
                 )
             else:
                 url_data = st.session_state.urls[sel]
@@ -87,9 +90,9 @@ def _extract_images(sel: str, doc_kind, min_dim: int) -> list:
                     url_data.get("html", ""), url_data.get("url", "")
                 )
                 st.session_state[f"videos::{sel}"] = media["videos"]
-                imgs = _fetch_url_images(media["images"], min_dim)
+                imgs = _fetch_url_images(media["images"], MIN_IMAGE_DIM)
         except Exception as e:
-            st.error(f"Image extraction failed: {e}")
+            show_error(e)
     return imgs
 
 

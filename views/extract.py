@@ -6,6 +6,7 @@ from pathlib import Path
 import streamlit as st
 
 from analyzer.extractors import EXTRACTORS, run_extractor
+from views.errors import show_error
 
 
 def render_extract_view(ctx: dict) -> None:
@@ -34,12 +35,16 @@ def render_extract_view(ctx: dict) -> None:
         if EXTRACTORS[lbl] in ("pymupdf", "gemini_vision")
     ]
     sel = st.selectbox("Document", pdf_docs, key="t1_doc")
-    picked_labels = st.multiselect(
-        "Extractors to compare",
-        available_labels,
-        default=default_pick or available_labels[:2],
-        help="LLM-based extractors are slower but handle layout/tables/OCR better.",
-    )
+
+    st.markdown("**Extractors to compare**")
+    st.caption("LLM-based extractors are slower but handle layout/tables/OCR better.")
+    default_set = set(default_pick or available_labels[:2])
+    ex_cols = st.columns(len(available_labels))
+    picked_labels = []
+    for col, label in zip(ex_cols, available_labels):
+        with col:
+            if st.checkbox(label, value=(label in default_set), key=f"t1_ex_{label}"):
+                picked_labels.append(label)
 
     if not llama_key:
         st.caption(":grey[LlamaParse hidden — add API key in sidebar to enable.]")
@@ -75,4 +80,4 @@ def render_extract_view(ctx: dict) -> None:
                             key=f"dl_{ex_id}_{sel}",
                         )
                     except Exception as e:
-                        st.error(f"Failed: {e}")
+                        show_error(e)

@@ -7,6 +7,7 @@ import streamlit as st
 
 from analyzer.analysis import analyze_pdf_direct, analyze_text, analyze_url_doc
 from analyzer.extractors import EXTRACTORS, run_extractor
+from views.errors import show_error
 
 
 def render_brief_view(ctx: dict) -> None:
@@ -50,7 +51,7 @@ def _render_url_controls(client, sel: str) -> None:
                 )
                 st.session_state[f"page_brief::{sel}"] = result
             except Exception as e:
-                st.error(f"Analysis failed: {e}")
+                show_error(e)
 
 
 def _render_pdf_controls(client, llama_key: str, sel: str) -> None:
@@ -78,7 +79,7 @@ def _render_pdf_controls(client, llama_key: str, sel: str) -> None:
                     result = analyze_text(client, text)
                 st.session_state[f"page_brief::{sel}"] = result
             except Exception as e:
-                st.error(f"Analysis failed: {e}")
+                show_error(e)
 
 
 def _render_brief(brief: dict, sel: str, doc_kind) -> None:

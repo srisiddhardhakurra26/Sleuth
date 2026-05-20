@@ -28,17 +28,15 @@ def render_sidebar() -> dict:
         uploaded = st.file_uploader(
             "Upload PDFs", type="pdf", accept_multiple_files=True
         )
-        url_input = st.text_input(
-            "Or scrape a URL",
-            placeholder="https://www.business.reddit.com/",
-            help="Renders the page locally with headless Chromium "
-                 "(captures JS, lazy-loaded sections, full-page screenshot).",
-        )
-        crawl_btn = st.button(
-            "Crawl URL",
-            type="primary",
-            disabled=not url_input.strip(),
-        )
+        with st.form("crawl_form", clear_on_submit=False, border=False):
+            url_input = st.text_input(
+                "Or scrape a URL",
+                placeholder="https://www.business.reddit.com/",
+                help="Renders the page locally with headless Chromium "
+                     "(captures JS, lazy-loaded sections, full-page screenshot). "
+                     "Press Enter or click Crawl URL to start.",
+            )
+            crawl_btn = st.form_submit_button("Crawl URL", type="primary")
 
     return {
         "gemini_key": gemini_key,
