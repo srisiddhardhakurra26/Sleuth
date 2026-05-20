@@ -1,6 +1,17 @@
-# Website Analyzer
+---
+title: Sleuth
+emoji: 🕵️
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 7860
+pinned: false
+license: mit
+---
 
-Extract, analyze, and chat with website content — PDF uploads or live URL crawls. Free tier only.
+# Sleuth
+
+Investigate any website or PDF — extract, brief, and chat with the content. Free tier only.
 
 ## Setup
 

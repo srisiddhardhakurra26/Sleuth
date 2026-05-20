@@ -10,7 +10,7 @@ from views.sidebar import render_crawled_urls, render_sidebar
 from views.state import build_context, init_state, sync_pdfs
 
 
-st.set_page_config(page_title="Website PDF Analyzer", layout="wide")
+st.set_page_config(page_title="Sleuth", page_icon="🕵️", layout="wide")
 
 init_state()
 inputs = render_sidebar()
@@ -21,8 +21,8 @@ if not inputs["gemini_key"]:
 
 client = get_client(inputs["gemini_key"])
 
-st.title("Website Analyzer")
-st.caption("Extract, analyze, and chat with website content — PDFs or live URLs. Free tier only.")
+st.title("Sleuth")
+st.caption("Investigate any website or PDF — extract, brief, and chat with the content.")
 
 sync_pdfs(inputs["uploaded"])
 
