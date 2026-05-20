@@ -1,18 +1,18 @@
 FROM mcr.microsoft.com/playwright/python:v1.45.0-jammy
 
-RUN useradd -m -u 1000 user
-USER user
-ENV PATH="/home/user/.local/bin:$PATH" \
-    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
-    PYTHONUNBUFFERED=1
+ENV PYTHONUNBUFFERED=1 \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
 WORKDIR /app
 
-COPY --chown=user requirements.txt .
+COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-COPY --chown=user . .
+COPY . .
+RUN chown -R pwuser:pwuser /app
+
+USER pwuser
 
 EXPOSE 7860
 
